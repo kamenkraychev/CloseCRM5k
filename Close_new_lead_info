@@ -1,0 +1,96 @@
+from closeio_api import Client
+
+def create_closeio_client(api_key):
+    """Create and return a Close.io API client."""
+    return Client(api_key)
+
+def create_lead(client, name, phone, email):
+    """Create a new lead in Close.io and return the response."""
+    lead_data = {
+        "name": name,
+        "contacts": [
+            {
+                "name": name,
+                "phones": [{"phone": phone, "type": "office"}],
+                "emails": [{"email": email, "type": "office"}]
+            }
+        ],
+        "custom.cf_Ne7Rvkn8SbMHNXTJhqZfw4399yffEow999POdEbi7gi": 1,
+        "custom.cf_lIjMTNxniDwEMnmYnzpeAD6QhnAXtXBvhghZ1AxBNiG": "2024-03-20T05:30:24.844000+00:00",
+        "custom.cf_A9Pu5ul2B5v7ch5YUBAijj0W9DiUzpNlYafA0EbqZQn": "2024-12-20",
+        "custom.cf_MY3z9BJzDfQccgCU4NYgXctQ1mmmGCQJhCkM642bYhf": "Weiblich"
+    }
+    return client.post('lead/', data=lead_data)
+
+
+def create_task(client, lead_id, text, due_date):
+    """Create a new task associated with a lead in Close.io and return the response."""
+    task_data = {
+        "lead_id": lead_id,
+        "text": text,
+        "due_date": due_date,
+        "is_complete": False
+    }
+    return client.post('task/', data=task_data)
+
+
+def create_opportunity(client, lead_id, status, value, value_period, confidence, note):
+    """Create a new opportunity for a lead in Close.io and return the response."""
+    opportunity_data = {
+        "lead_id": lead_id,
+        "status_id": status,  # Note: Changed 'status' to 'status_id' to match API field name
+        "value": value,
+        "value_period": value_period,
+        "confidence": confidence,
+        "note": note
+    }
+    return client.post('opportunity/', data=opportunity_data)
+
+def custom_fied(client, lead_id):
+    """Create a new custom field"""
+    custom_field_data = {
+        "custom_activity_type_id": "actitype_1h5m6uHM9BZOpwVhyRJb4Y",
+        "name": "Contact Name",
+        "type": "text",
+        "required": False,
+        "accepts_multiple_values": False,
+        "editable_with_roles": []
+}
+
+    return client.post('custom_field/lead', data=custom_field_data)
+
+
+def main():
+    # Your details
+    name = "Silvi Antonova"
+    phone = "+359822365656"
+    email = "silvi@gmail.com"
+    api_key = "api_1YAg4MliLQRinvDtRvpTFN.6lEtp6xTeiYGyqLDSdJDoD"
+
+    # Setup the Close.io client
+    client = create_closeio_client(api_key)
+
+    # Create a new lead
+    created_lead_response = create_lead(client, name, phone, email)
+    created_lead_id = created_lead_response['id']
+    print(f"Created Lead ID: {created_lead_id}")
+
+    # Create a task for the new lead
+    task_text = "New Very Important Task"
+    task_date = "2026-02-20"
+    task_response = create_task(client, created_lead_id, text=task_text, due_date=task_date)
+    print(f"Created Task: {task_response}")
+
+    # Define opportunity details
+    status = "stat_UHXvB9ZPkHH6CDUyWEiz39j6xlgvp8bntTJoUuptTQT"
+    value = 100000000
+    value_period = "monthly"
+    confidence = 40
+    note = "I like the deal!"
+
+    # Create a new opportunity for the lead
+    created_opportunity_response = create_opportunity(client, created_lead_id, status, value, value_period, confidence, note)
+    print(f"Created Opportunity: {created_opportunity_response}")
+
+if __name__ == "__main__":
+    main()
